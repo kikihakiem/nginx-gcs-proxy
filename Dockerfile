@@ -1,12 +1,13 @@
+FROM golang:1.11-alpine AS builder
+COPY gcs-signed-url-generator /go/src
+WORKDIR /go/src
+RUN go build -buildmode=c-shared -o ../bin/generator.so generator.go credential.go
+
 FROM openresty:1.13.6.2-2-alpine-fat
 RUN /usr/local/openresty/luajit/bin/luarocks install lua2go
+WORKDIR /lua2go/
+COPY --from=builder /go/bin/ ./
+COPY generator.lua ./
+COPY nginx.conf ./conf/
 
-# Install and configure Go
-RUN apk add --no-cache git musl-dev go
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
-RUN go get -u github.com/kikihakiem/gcs-signed-url-generator
-
-
+CMD ["/usr/local/openresty/bin/openresty", "-c", "/lua2go/conf/nginx.conf", "-g", "daemon off;"]
