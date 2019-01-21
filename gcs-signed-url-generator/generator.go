@@ -1,6 +1,7 @@
-package generator
+package main
 
 import (
+	"C"
 	"fmt"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 )
 
 // GenerateSignedURL generates signed URL for Google Cloud Storage object
+//export GenerateSignedURL
 func GenerateSignedURL(bucketName, fileName string, expiresInSecond int) (string, error) {
 	if expiresInSecond == 0 {
 		expiresInSecond = 300 // default expiration is 5 minutes
@@ -43,3 +45,5 @@ func getSignedURLOptions(expires time.Time) (storage.SignedURLOptions, error) {
 
 	return signedURLOptions, nil
 }
+
+func main() {}
